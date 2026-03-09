@@ -23,6 +23,9 @@ class Restaurant extends Model
         'google_maps',
         'is_active',
         'moto',
+        'qr_foreground',
+        'qr_background',
+        'qr_logo_path',
     ];
 
     protected $casts = [

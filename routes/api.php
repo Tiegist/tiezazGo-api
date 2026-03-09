@@ -6,6 +6,7 @@ use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\FeedbackController;
 use App\Http\Controllers\MenuAvailableDateController;
 use App\Http\Controllers\MenuItemController;
+use App\Http\Controllers\QrCodeController;
 use App\Http\Controllers\RestaurantController;
 use App\Http\Controllers\RestaurantSubscriptionController;
 use App\Http\Controllers\SaasPaymentController;
@@ -25,6 +26,7 @@ Route::prefix('v1')->group(function (): void {
     Route::get('menu/{restaurant_slug}', [PublicMenuController::class, 'show']);
     Route::get('menu/{restaurant_slug}/categories', [PublicMenuController::class, 'categories']);
     Route::get('menu/{restaurant_slug}/items', [PublicMenuController::class, 'items']);
+    Route::get('menu/{restaurant_slug}/table/{table_number}', [PublicMenuController::class, 'table']);
 
     Route::middleware('auth:sanctum')->group(function (): void {
         Route::get('me', [AuthController::class, 'me']);
@@ -38,6 +40,11 @@ Route::prefix('v1')->group(function (): void {
             Route::apiResource('menu-items', MenuItemController::class);
             Route::apiResource('menu-available-dates', MenuAvailableDateController::class);
             Route::apiResource('tables', TableController::class);
+            Route::post('restaurants/{restaurant}/tables/bulk', [TableController::class, 'bulkStore']);
+            Route::get('tables/{table}/qr-code', [QrCodeController::class, 'downloadTable']);
+            Route::get('restaurants/{restaurant}/qr-codes/download', [QrCodeController::class, 'downloadRestaurantZip']);
+            Route::post('restaurants/{restaurant}/qr-codes/regenerate', [QrCodeController::class, 'regenerateRestaurant']);
+
             Route::apiResource('feedback', FeedbackController::class);
             Route::apiResource('restaurant-subscriptions', RestaurantSubscriptionController::class);
             Route::apiResource('saas-payments', SaasPaymentController::class);
