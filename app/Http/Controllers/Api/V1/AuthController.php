@@ -15,25 +15,25 @@ class AuthController extends Controller
     {
         [$user, $token] = $auth->register($request->validated());
 
-        return response()->json([
+        return $this->respondSuccess([
             'user' => new UserResource($user),
             'token' => $token,
             'token_type' => 'Bearer',
-        ], 201);
+        ], 'Registered successfully', status: 201);
     }
 
     public function login(LoginRequest $request, AuthService $auth): \Illuminate\Http\JsonResponse
     {
         [$user, $token] = $auth->login($request->validated());
 
-        return response()->json([
+        return $this->respondSuccess([
             'user' => new UserResource($user),
             'token' => $token,
             'token_type' => 'Bearer',
-        ]);
+        ], 'Logged in successfully');
     }
 
-    public function logout(Request $request, AuthService $auth): \Illuminate\Http\Response
+    public function logout(Request $request, AuthService $auth): \Illuminate\Http\JsonResponse
     {
         $user = $request->user();
 
@@ -41,12 +41,12 @@ class AuthController extends Controller
             $auth->logout($user, $user->currentAccessToken());
         }
 
-        return response()->noContent();
+        return $this->respondSuccess(null, 'Logged out successfully');
     }
 
-    public function me(Request $request): UserResource
+    public function me(Request $request): \Illuminate\Http\JsonResponse
     {
-        return new UserResource($request->user());
+        return $this->respondSuccess(new UserResource($request->user()), 'Profile retrieved successfully');
     }
 }
 
