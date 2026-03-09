@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Restaurant;
 use App\Models\Table;
 use Illuminate\Http\Request;
 
@@ -44,7 +45,6 @@ class TableController extends Controller
         $validated = $request->validate([
             'restaurant_id' => [$this->isAdmin($request) ? 'required' : 'sometimes', 'integer', 'exists:restaurants,id'],
             'table_number' => ['required', 'integer'],
-            'qr_code' => ['nullable', 'string', 'max:255'],
             'is_active' => ['sometimes', 'boolean'],
         ]);
 
@@ -86,7 +86,6 @@ class TableController extends Controller
         $validated = $request->validate([
             'restaurant_id' => [$this->isAdmin($request) ? 'sometimes' : 'prohibited', 'integer', 'exists:restaurants,id'],
             'table_number' => ['sometimes', 'integer'],
-            'qr_code' => ['sometimes', 'nullable', 'string', 'max:255'],
             'is_active' => ['sometimes', 'boolean'],
         ]);
 
@@ -106,5 +105,53 @@ class TableController extends Controller
         $table->delete();
 
         return $this->respondSuccess(null, 'Table deleted successfully');
+    }
+
+    public function bulkStore(Request $request, Restaurant $restaurant): \Illuminate\Http\JsonResponse
+    {
+        if (! $this->isAdmin($request)) {
+            if ((int) $restaurant->id !== (int) $this->requireRestaurantId($request)) {
+                abort(404);
+            }
+        }
+
+        $validated = $request->validate([
+            'start' => ['required', 'integer', 'min:1', 'max:5000'],
+            'end' => ['required', 'integer', 'min:1', 'max:5000', 'gte:start'],
+            'is_active' => ['sometimes', 'boolean'],
+        ]);
+
+        $start = (int) $validated['start'];
+        $end = (int) $validated['end'];
+        $isActive = (bool) ($validated['is_active'] ?? true);
+
+        $created = 0;
+        $skipped = 0;
+
+        for ($n = $start; $n <= $end; $n++) {
+            $exists = Table::query()
+                ->where('restaurant_id', $restaurant->id)
+                ->where('table_number', $n)
+                ->exists();
+
+            if ($exists) {
+                $skipped++;
+                continue;
+            }
+
+            Table::query()->create([
+                'restaurant_id' => $restaurant->id,
+                'table_number' => $n,
+                'is_active' => $isActive,
+            ]);
+
+            $created++;
+        }
+
+        return $this->respondSuccess([
+            'created' => $created,
+            'skipped' => $skipped,
+            'range' => ['start' => $start, 'end' => $end],
+        ], 'Bulk tables created successfully');
     }
 }

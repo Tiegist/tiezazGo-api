@@ -12,6 +12,7 @@ use App\Models\SaasPayment;
 use App\Models\SubscriptionPlan;
 use App\Models\Table;
 use App\Models\User;
+use App\Services\Qr\QrCodeService;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Str;
 
@@ -147,12 +148,15 @@ class SaasDemoSeeder extends Seeder
         }
 
         foreach (range(1, 10) as $n) {
-            Table::query()->create([
+            $table = Table::query()->create([
                 'restaurant_id' => $restaurant->id,
                 'table_number' => $n,
                 'qr_code' => null,
                 'is_active' => true,
             ]);
+
+            // DatabaseSeeder uses WithoutModelEvents, so generate QR codes explicitly here.
+            app(QrCodeService::class)->generateForTable($table);
         }
 
         foreach (range(1, 12) as $i) {

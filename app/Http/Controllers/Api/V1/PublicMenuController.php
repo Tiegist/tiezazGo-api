@@ -5,7 +5,9 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Models\MenuItem;
+use App\Models\QrScan;
 use App\Models\Restaurant;
+use App\Models\Table;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 
@@ -119,6 +121,37 @@ class PublicMenuController extends Controller
             ],
             'include' => $includes,
         ]);
+    }
+
+    public function table(Request $request, string $restaurant_slug, int $table_number): \Illuminate\Http\JsonResponse
+    {
+        $restaurant = Restaurant::query()
+            ->where('slug', $restaurant_slug)
+            ->where('is_active', true)
+            ->firstOrFail();
+
+        $table = Table::query()
+            ->where('restaurant_id', $restaurant->id)
+            ->where('table_number', $table_number)
+            ->where('is_active', true)
+            ->firstOrFail();
+
+        // Track scan (basic analytics)
+        QrScan::query()->create([
+            'restaurant_id' => $restaurant->id,
+            'table_id' => $table->id,
+            'scanned_at' => now(),
+            'ip' => $request->ip(),
+            'user_agent' => substr((string) $request->userAgent(), 0, 512),
+        ]);
+
+        $menu = $this->getMenu($restaurant_slug);
+
+        return $this->respondSuccess([
+            'restaurant' => $menu['restaurant'],
+            'table' => $table,
+            'categories' => $menu['categories'],
+        ], 'Table menu retrieved successfully');
     }
 }
 

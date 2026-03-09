@@ -2,29 +2,33 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class Table extends Model
+class QrScan extends Model
 {
-    use HasFactory;
+    public $timestamps = false;
 
     protected $fillable = [
         'restaurant_id',
-        'table_number',
-        'qr_code',
-        'qr_code_svg',
-        'is_active',
+        'table_id',
+        'scanned_at',
+        'user_agent',
+        'ip',
     ];
 
     protected $casts = [
-        'table_number' => 'integer',
-        'is_active' => 'boolean',
+        'scanned_at' => 'datetime',
     ];
 
     public function restaurant(): BelongsTo
     {
         return $this->belongsTo(Restaurant::class);
     }
+
+    public function table(): BelongsTo
+    {
+        return $this->belongsTo(Table::class);
+    }
 }
+
