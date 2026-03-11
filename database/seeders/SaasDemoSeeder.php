@@ -46,10 +46,10 @@ class SaasDemoSeeder extends Seeder
         );
 
         User::query()->firstOrCreate(
-            ['email' => 'admin@tiezaz.local'],
+            ['email' => 'admin@tizazgo.com'],
             [
                 'name' => 'Admin',
-                'password' => 'password',
+                'password' => 'patigo123',
                 'role' => 'admin',
                 'restaurant_id' => null,
             ]
