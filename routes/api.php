@@ -40,6 +40,7 @@ Route::prefix('v1')->group(function (): void {
             Route::apiResource('menu-items', MenuItemController::class);
             Route::apiResource('menu-available-dates', MenuAvailableDateController::class);
             Route::apiResource('tables', TableController::class);
+            
             Route::post('restaurants/{restaurant}/tables/bulk', [TableController::class, 'bulkStore']);
             Route::get('tables/{table}/qr-code', [QrCodeController::class, 'downloadTable']);
             Route::get('restaurants/{restaurant}/qr-codes/download', [QrCodeController::class, 'downloadRestaurantZip']);
